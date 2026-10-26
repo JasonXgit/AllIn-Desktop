@@ -1,6 +1,7 @@
 // Copyright 2023 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import { useEffect } from 'react';
 import type { JSX } from 'react';
 
 import type { LocalizerType } from '../types/I18N.std.ts';
@@ -8,6 +9,8 @@ import type { NavTabPanelProps } from './NavTabs.dom.tsx';
 import { WhatsNewLink } from './WhatsNewLink.dom.tsx';
 import type { SmartConversationViewProps } from '../state/smart/ConversationView.preload.tsx';
 import { tw } from '../axo/tw.dom.tsx';
+import { AllInPaneView } from '../allin/AllInPaneView.dom.tsx';
+import { openAllInPane, useAllInState } from '../allin/store.dom.ts';
 
 export type ChatsTabProps = Readonly<{
   otherTabsUnreadCount: number;
@@ -38,6 +41,14 @@ export function ChatsTab({
   selectedConversationId,
   showWhatsNewModal,
 }: ChatsTabProps): JSX.Element {
+  // AllIn: a Google Voice conversation or Fantasy Football can be open instead of a Signal conversation.
+  const { openPane } = useAllInState();
+  useEffect(() => {
+    if (selectedConversationId) {
+      openAllInPane(undefined);
+    }
+  }, [selectedConversationId]);
+
   return (
     <>
       <div id="LeftPane">
@@ -51,7 +62,11 @@ export function ChatsTab({
       </div>
       <div className="Inbox__conversation-stack">
         <div id="toast" />
-        {selectedConversationId ? (
+        {openPane && !selectedConversationId ? (
+          <div className="Inbox__conversation">
+            <AllInPaneView pane={openPane} />
+          </div>
+        ) : selectedConversationId ? (
           <div
             // Use `key` to force the tree to fully re-mount
             key={selectedConversationId}

@@ -228,13 +228,17 @@ export function newTransactionId(): number {
   return randomInt(1, 2 ** 47);
 }
 
-/** Sends a text, optionally with a JPEG photo, into an existing conversation. */
+/**
+ * Sends a text, optionally with a JPEG photo. Into an existing conversation by [threadId]; or, like the web app,
+ * a new conversation is created by leaving [threadId] empty and listing the [recipients].
+ */
 export async function sendSms(
   threadId: string,
   text: string,
   transactionId: number,
   trackingData: string,
-  jpeg: Uint8Array | undefined
+  jpeg: Uint8Array | undefined,
+  recipients: ReadonlyArray<string> = []
 ): Promise<Proto.RespSendSMS> {
   const media = jpeg ? pblite(MEDIA_TYPE_JPEG, jpeg) : null;
   const body = pblite(
@@ -244,7 +248,7 @@ export async function sendSms(
     null,
     text,
     threadId,
-    null,
+    recipients.length ? new Raw(JSON.stringify(recipients)) : null,
     null,
     pblite(transactionId),
     media,

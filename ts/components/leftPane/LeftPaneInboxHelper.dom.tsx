@@ -22,6 +22,7 @@ import { ChatFolderType } from '../../types/ChatFolder.std.ts';
 import { AxoButton } from '../../axo/AxoButton.dom.tsx';
 import { NavTab, SettingsPage, type Location } from '../../types/Nav.std.ts';
 import { tw } from '../../axo/tw.dom.tsx';
+import type { GoogleVoiceThreadSummary } from '../../allin/types.std.ts';
 
 const { last } = lodash;
 
@@ -39,6 +40,14 @@ export type LeftPaneInboxPropsType = {
   filterByUnread: boolean;
 };
 
+/** AllIn: what AllIn adds to the inbox (shown only in "All chats" without a filter). */
+export type AllInInboxData = Readonly<{
+  googleVoiceThreads: ReadonlyArray<GoogleVoiceThreadSummary>;
+  showFantasy: boolean;
+}>;
+
+const NO_ALLIN: AllInInboxData = { googleVoiceThreads: [], showFantasy: false };
+
 // oxlint-disable-next-line react/prefer-function-component
 export class LeftPaneInboxHelper extends LeftPaneHelper<LeftPaneInboxPropsType> {
   readonly #conversations: ReadonlyArray<ConversationListItemPropsType>;
@@ -52,6 +61,9 @@ export class LeftPaneInboxHelper extends LeftPaneHelper<LeftPaneInboxPropsType> 
   readonly #searchConversation: undefined | ConversationType;
   readonly #selectedChatFolder: ChatFolder | null;
   readonly #filterByUnread: boolean;
+  readonly #showFantasy: boolean;
+  /** Unpinned Signal conversations and Google Voice threads, newest first. */
+  readonly #mainRows: ReadonlyArray<Row>;
 
   constructor({
     conversations,
@@ -65,7 +77,8 @@ export class LeftPaneInboxHelper extends LeftPaneHelper<LeftPaneInboxPropsType> 
     searchConversation,
     selectedChatFolder,
     filterByUnread,
-  }: Readonly<LeftPaneInboxPropsType>) {
+  }: Readonly<LeftPaneInboxPropsType>,
+  allin: AllInInboxData = NO_ALLIN) {
     super();
 
     this.#conversations = conversations;
@@ -79,6 +92,38 @@ export class LeftPaneInboxHelper extends LeftPaneHelper<LeftPaneInboxPropsType> 
     this.#searchConversation = searchConversation;
     this.#selectedChatFolder = selectedChatFolder;
     this.#filterByUnread = filterByUnread;
+
+    const showAllIn =
+      !filterByUnread &&
+      !searchConversation &&
+      (selectedChatFolder == null ||
+        selectedChatFolder.folderType === ChatFolderType.ALL);
+    this.#showFantasy = showAllIn && allin.showFantasy;
+
+    const gvThreads = showAllIn ? allin.googleVoiceThreads : [];
+    const mainRows: Array<Row> = [];
+    let c = 0;
+    let g = 0;
+    while (c < conversations.length || g < gvThreads.length) {
+      const conversation = conversations[c];
+      const thread = gvThreads[g];
+      if (
+        thread &&
+        (!conversation || thread.dateMs > (conversation.lastUpdated ?? 0))
+      ) {
+        mainRows.push({ type: RowType.AllInGoogleVoice, thread });
+        g += 1;
+      } else if (conversation) {
+        mainRows.push({ type: RowType.Conversation, conversation });
+        c += 1;
+      }
+    }
+    this.#mainRows = mainRows;
+  }
+
+  /** Changes when rows of a different height move, so the list must re-measure. */
+  getRowHeightKey(): string {
+    return `${this.#showFantasy}|${this.#pinnedConversations.length}|${this.#hasNotPinned()}`;
   }
 
   getRowCount(): number {
@@ -92,9 +137,10 @@ export class LeftPaneInboxHelper extends LeftPaneHelper<LeftPaneInboxPropsType> 
     }
     const buttonCount = this.#shouldShowArchiveButton() ? 1 : 0;
     return (
+      (this.#showFantasy ? 1 : 0) +
       headerCount +
       this.#pinnedConversations.length +
-      this.#conversations.length +
+      this.#mainRows.length +
       buttonCount
     );
   }
@@ -221,11 +267,18 @@ export class LeftPaneInboxHelper extends LeftPaneHelper<LeftPaneInboxPropsType> 
   getRow(rowIndex: number): undefined | Row {
     const pinnedConversations = this.#pinnedConversations;
     const archivedConversations = this.#archivedConversations;
-    const conversations = this.#conversations;
+    const mainRows = this.#mainRows;
 
     const archivedConversationsCount = archivedConversations.length;
 
     let index = rowIndex;
+
+    if (this.#showFantasy) {
+      if (index === 0) {
+        return { type: RowType.AllInFantasy };
+      }
+      index -= 1;
+    }
 
     if (this.#hasPinned()) {
       if (index === 0) {
@@ -257,14 +310,10 @@ export class LeftPaneInboxHelper extends LeftPaneHelper<LeftPaneInboxPropsType> 
       }
     }
 
-    if (index < conversations.length) {
-      return {
-        type: RowType.Conversation,
-        // oxlint-disable-next-line typescript/no-non-null-assertion
-        conversation: conversations[index]!,
-      };
+    if (index < mainRows.length) {
+      return mainRows[index];
     }
-    index -= conversations.length;
+    index -= mainRows.length;
 
     if (index === 0 && this.#shouldShowArchiveButton()) {
       return {
@@ -286,20 +335,23 @@ export class LeftPaneInboxHelper extends LeftPaneHelper<LeftPaneInboxPropsType> 
       conversation: Readonly<ConversationListItemPropsType>
     ) => conversation.id === selectedConversationId;
 
+    const fantasyOffset = this.#showFantasy ? 1 : 0;
     const pinnedConversationIndex = this.#pinnedConversations.findIndex(
       isConversationSelected
     );
     if (pinnedConversationIndex !== -1) {
-      return pinnedConversationIndex + 1;
+      return pinnedConversationIndex + 1 + fantasyOffset;
     }
 
-    const conversationIndex = this.#conversations.findIndex(
-      isConversationSelected
+    const conversationIndex = this.#mainRows.findIndex(
+      row =>
+        row.type === RowType.Conversation &&
+        isConversationSelected(row.conversation)
     );
     if (conversationIndex !== -1) {
       const pinnedOffset = this.#pinnedConversations.length;
       const headerOffset = this.#hasPinned() ? 2 : 0;
-      return conversationIndex + pinnedOffset + headerOffset;
+      return conversationIndex + pinnedOffset + headerOffset + fantasyOffset;
     }
 
     return undefined;
@@ -307,7 +359,8 @@ export class LeftPaneInboxHelper extends LeftPaneHelper<LeftPaneInboxPropsType> 
 
   override requiresFullWidth(): boolean {
     const hasNoConversations =
-      !this.#conversations.length &&
+      !this.#mainRows.length &&
+      !this.#showFantasy &&
       !this.#pinnedConversations.length &&
       !this.#archivedConversations.length;
     return hasNoConversations || this.#isAboutToSearch;
@@ -358,7 +411,7 @@ export class LeftPaneInboxHelper extends LeftPaneHelper<LeftPaneInboxPropsType> 
   }
 
   #hasNotPinned(): boolean {
-    return this.#conversations.length !== 0;
+    return this.#mainRows.length !== 0;
   }
 }
 

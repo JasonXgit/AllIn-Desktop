@@ -139,7 +139,7 @@ export class LeftPaneComposeHelper extends LeftPaneHelper<LeftPaneComposePropsTy
   getRowCount(): number {
     let result = 0;
     if (this.#hasTopButtons()) {
-      result += 3;
+      result += 4;
     }
     if (this.#hasContactsHeader()) {
       result += 1 + this.#composeContacts.length;
@@ -161,16 +161,20 @@ export class LeftPaneComposeHelper extends LeftPaneHelper<LeftPaneComposePropsTy
     let virtualRowIndex = actualRowIndex;
     if (this.#hasTopButtons()) {
       if (virtualRowIndex === 0) {
-        return { type: RowType.CreateNewGroup };
+        // AllIn: offer a Google Voice text alongside Signal's options.
+        return { type: RowType.AllInNewGoogleVoice };
       }
       if (virtualRowIndex === 1) {
-        return { type: RowType.FindByUsername };
+        return { type: RowType.CreateNewGroup };
       }
       if (virtualRowIndex === 2) {
+        return { type: RowType.FindByUsername };
+      }
+      if (virtualRowIndex === 3) {
         return { type: RowType.FindByPhoneNumber };
       }
 
-      virtualRowIndex -= 3;
+      virtualRowIndex -= 4;
     }
 
     if (this.#hasContactsHeader()) {
@@ -335,7 +339,7 @@ export class LeftPaneComposeHelper extends LeftPaneHelper<LeftPaneComposePropsTy
 
     if (this.#hasTopButtons()) {
       top = 0;
-      rowCount += 3;
+      rowCount += 4;
     }
     if (this.#hasContactsHeader()) {
       contact = rowCount;

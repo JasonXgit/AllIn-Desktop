@@ -129,6 +129,11 @@ export const ConversationListItem: FunctionComponent<Props> = memo(
           />
         )}
         {isMuted && <div className={`${HEADER_NAME_CLASS_NAME}__mute-icon`} />}
+        {/* AllIn: marks Signal chats as end-to-end encrypted, unlike Google Voice texts. */}
+        <div
+          className="AllInSecureIcon"
+          title="Signal: end-to-end encrypted"
+        />
       </>
     );
 

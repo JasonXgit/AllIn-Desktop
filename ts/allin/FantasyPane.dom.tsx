@@ -1,7 +1,7 @@
 // Copyright 2026 Jason (AllIn)
 // SPDX-License-Identifier: AGPL-3.0-only
 
-// AllIn: the Fantasy Football tab. This week's matchup with live scores, the league's other matchups, and the
+// AllIn: Fantasy Football in the conversation pane, opened from the row pinned above the chat list. This week's matchup with live scores, the league's other matchups, and the
 // standings, from ESPN through the main process (app/allin/EspnApi.main.ts).
 
 import { useCallback, useEffect, useState } from 'react';
@@ -14,7 +14,7 @@ import type {
 } from './types.std.ts';
 
 const REFRESH_MS = 60_000;
-const LEAGUE_KEY = 'allin.fantasy.league';
+import { FANTASY_LEAGUE_KEY as LEAGUE_KEY, refreshFantasy } from './store.dom.ts';
 
 function api() {
   return window.AllIn.api;
@@ -24,7 +24,7 @@ function points(value: number): string {
   return value.toFixed(1);
 }
 
-export function FantasyTab(): JSX.Element {
+export function FantasyPane(): JSX.Element {
   const [status, setStatus] = useState<FantasyStatus | undefined>();
   const [leagues, setLeagues] = useState<
     ReadonlyArray<EspnLeagueEntry> | undefined
@@ -128,6 +128,7 @@ export function FantasyTab(): JSX.Element {
                 } catch {
                   // Remembering the league is only a convenience.
                 }
+                void refreshFantasy();
               }}
             >
               {leagues.map(l => (
@@ -137,18 +138,6 @@ export function FantasyTab(): JSX.Element {
               ))}
             </select>
           )}
-          <button
-            type="button"
-            className="AllInTab__signOut AllInTab__signOut--inline"
-            onClick={async () => {
-              await api().fantasySignOut();
-              setLeagues(undefined);
-              setLeague(undefined);
-              await loadStatus();
-            }}
-          >
-            Sign out of ESPN
-          </button>
         </div>
 
         {error && <div className="AllInTab__error">{error}</div>}

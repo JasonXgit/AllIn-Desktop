@@ -438,3 +438,203 @@ $allin-green: #34a853;
 .AllInFantasy__mine td {
   font-weight: 700;
 }
+
+// Lock next to Signal chat names in the list: Signal chats are end-to-end encrypted, Google Voice texts are not.
+.AllInSecureIcon {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  margin-inline-start: 4px;
+  @include mixins.color-svg(
+    '../images/icons/v3/lock/lock.svg',
+    var(--axo-color-label-secondary)
+  );
+}
+
+.AllInConversation__subtitle {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--axo-color-label-secondary);
+}
+
+.AllInSettings {
+  max-width: 520px;
+  padding: 24px;
+}
+
+.AllInSettings__intro {
+  color: var(--axo-color-label-secondary);
+  line-height: 1.4;
+}
+
+.AllInSettings__link {
+  display: block;
+  margin-top: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--axo-color-label-accent);
+  cursor: pointer;
+}
+
+// Rows AllIn adds to the chat list, sized like Signal's (76px) and marked with a green bar.
+.AllInListRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+  padding: 0 12px 0 13px;
+  border: none;
+  border-inline-start: 3px solid $allin-green;
+  border-radius: 0;
+  background: none;
+  color: var(--axo-color-label-primary);
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--axo-color-fill-secondary);
+  }
+}
+
+.AllInListRow--selected {
+  background: var(--axo-color-fill-secondary);
+}
+
+.AllInListRow--fantasy {
+  border-inline-start-color: #1e88e5;
+}
+
+.AllInListRow__avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background: rgba($allin-green, 0.25);
+  color: $allin-green;
+  font-weight: 600;
+
+  .module-conversation-list__item--contact-or-conversation & {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.AllInListRow__avatar--fantasy {
+  background: rgba(#1e88e5, 0.2);
+  @include mixins.color-svg('../images/icons/v3/trending/trending.svg', #1e88e5);
+  -webkit-mask-size: 28px;
+}
+
+.AllInListRow__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.AllInListRow__top,
+.AllInListRow__bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.AllInListRow__name {
+  flex: 1;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.AllInListRow__time {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--axo-color-label-secondary);
+}
+
+.AllInListRow__snippet {
+  flex: 1;
+  overflow: hidden;
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--axo-color-label-secondary);
+
+  .AllInListRow--unread & {
+    color: var(--axo-color-label-primary);
+    font-weight: 600;
+  }
+}
+
+.AllInListRow__badge {
+  flex-shrink: 0;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: rgba($allin-green, 0.2);
+  color: $allin-green;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.AllInListRow__unread {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: $allin-green;
+}
+
+.AllInNewText__to {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--axo-color-border-primary);
+
+  input {
+    flex: 1;
+    min-width: 160px;
+    padding: 6px 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    outline: none;
+  }
+}
+
+.AllInNewText__chip {
+  padding: 2px 10px;
+  border: none;
+  border-radius: 12px;
+  background: rgba($allin-green, 0.25);
+  color: inherit;
+  cursor: pointer;
+}
+
+.AllInNewText__suggestion {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--axo-color-fill-secondary);
+  }
+
+  span {
+    margin-inline-start: 8px;
+    color: var(--axo-color-label-secondary);
+  }
+}

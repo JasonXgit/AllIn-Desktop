@@ -136,6 +136,20 @@ export function initAllIn({
         signed: signature != null,
       };
     },
+    async gvSendNew(recipients, text, jpeg) {
+      const transactionId = newTransactionId();
+      const signature = await sign('', [...recipients], String(transactionId));
+      const response = await sendSms(
+        '',
+        text,
+        transactionId,
+        signature ?? '!',
+        jpeg,
+        recipients
+      );
+      requestCheck();
+      return { threadId: response.threadID || undefined };
+    },
     async gvAttachment(attachmentId) {
       const { bytes, mimeType } = await downloadAttachment(attachmentId);
       return `data:${mimeType};base64,${Buffer.from(bytes).toString('base64')}`;

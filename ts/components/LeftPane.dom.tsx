@@ -12,6 +12,7 @@ import {
   useEffectEvent,
 } from 'react';
 import classNames from 'classnames';
+import { startAllIn, useAllInState } from '../allin/store.dom.ts';
 
 import type { ToFindType } from './leftPane/LeftPaneHelper.dom.tsx';
 import { FindDirection } from './leftPane/LeftPaneHelper.dom.tsx';
@@ -335,6 +336,18 @@ export function LeftPane({
     setShouldRecomputeRowHeights(false);
   }, []);
 
+  // AllIn: Google Voice threads and the Fantasy Football row in the inbox.
+  useEffect(() => startAllIn(), []);
+  const allInState = useAllInState();
+  const allInInbox = useMemo(
+    () => ({
+      googleVoiceThreads: allInState.gvThreads,
+      showFantasy: allInState.fantasySignedIn,
+    }),
+    [allInState.gvThreads, allInState.fantasySignedIn]
+  );
+  const allInRowHeightKey = useRef('');
+
   // The left pane can be in various modes: the inbox, the archive, the composer, etc.
   //   Ideally, this would render subcomponents such as `<LeftPaneInbox>` or
   //   `<LeftPaneArchive>` (and if there's a way to do that cleanly, we should refactor
@@ -364,11 +377,18 @@ export function LeftPane({
     | LeftPaneSetGroupMetadataHelper;
   switch (modeSpecificProps.mode) {
     case LeftPaneMode.Inbox: {
-      const inboxHelper = new LeftPaneInboxHelper(modeSpecificProps);
+      const inboxHelper = new LeftPaneInboxHelper(
+        modeSpecificProps,
+        allInInbox
+      );
       if (
         previousModeSpecificProps.mode === modeSpecificProps.mode &&
         inboxHelper.shouldRecomputeRowHeights(previousModeSpecificProps)
       ) {
+        markShouldRecomputeRowHeights();
+      }
+      if (allInRowHeightKey.current !== inboxHelper.getRowHeightKey()) {
+        allInRowHeightKey.current = inboxHelper.getRowHeightKey();
         markShouldRecomputeRowHeights();
       }
       helper = inboxHelper;

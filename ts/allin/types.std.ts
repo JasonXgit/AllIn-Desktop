@@ -96,6 +96,12 @@ export type AllInApi = {
     text: string,
     jpeg: Uint8Array | undefined
   ): Promise<GoogleVoiceSendResult>;
+  /** Starts a new conversation with [recipients] (E.164 numbers); returns its thread ID when Google gives one. */
+  gvSendNew(
+    recipients: ReadonlyArray<string>,
+    text: string,
+    jpeg: Uint8Array | undefined
+  ): Promise<{ threadId: string | undefined }>;
   /** A data: URL for a picture in a message. */
   gvAttachment(attachmentId: string): Promise<string | undefined>;
   gvSetOpenThread(threadId: string | undefined): Promise<void>;

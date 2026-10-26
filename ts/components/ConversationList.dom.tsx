@@ -38,6 +38,12 @@ import { GroupListItem } from './conversationList/GroupListItem.dom.tsx';
 import { ListView } from './ListView.dom.tsx';
 import { Button, ButtonVariant } from './Button.dom.tsx';
 import { ListTile } from './ListTile.dom.tsx';
+import type { GoogleVoiceThreadSummary } from '../allin/types.std.ts';
+import {
+  FantasyListRow,
+  GoogleVoiceListRow,
+  NewGoogleVoiceRow,
+} from '../allin/ChatListRows.dom.tsx';
 import type { RenderConversationListItemContextMenuProps } from './conversationList/BaseConversationListItem.dom.tsx';
 
 const { get, pick } = lodash;
@@ -64,7 +70,18 @@ export enum RowType {
   StartNewConversation = 'StartNewConversation',
   UsernameSearchResult = 'UsernameSearchResult',
   EmptyResults = 'EmptyResults',
+  // AllIn (ts/allin/ChatListRows.dom.tsx)
+  AllInGoogleVoice = 'AllInGoogleVoice',
+  AllInFantasy = 'AllInFantasy',
+  AllInNewGoogleVoice = 'AllInNewGoogleVoice',
 }
+
+type AllInGoogleVoiceRowType = {
+  type: RowType.AllInGoogleVoice;
+  thread: GoogleVoiceThreadSummary;
+};
+type AllInFantasyRowType = { type: RowType.AllInFantasy };
+type AllInNewGoogleVoiceRowType = { type: RowType.AllInNewGoogleVoice };
 
 type ArchiveButtonRowType = {
   type: RowType.ArchiveButton;
@@ -204,7 +221,10 @@ export type Row =
   | StartNewConversationRowType
   | SelectSingleGroupRowType
   | UsernameRowType
-  | EmptyResultsRowType;
+  | EmptyResultsRowType
+  | AllInGoogleVoiceRowType
+  | AllInFantasyRowType
+  | AllInNewGoogleVoiceRowType;
 
 export type PropsType = {
   dimensions?: {
@@ -305,6 +325,7 @@ export function ConversationList({
         case RowType.CreateNewGroup:
         case RowType.FindByUsername:
         case RowType.FindByPhoneNumber:
+        case RowType.AllInNewGoogleVoice:
           return SELECT_ROW_HEIGHT;
         case RowType.ArchiveButton:
         case RowType.Blank:
@@ -316,6 +337,8 @@ export function ConversationList({
         case RowType.SearchResultsLoadingFakeRow:
         case RowType.StartNewConversation:
         case RowType.UsernameSearchResult:
+        case RowType.AllInGoogleVoice:
+        case RowType.AllInFantasy:
           return NORMAL_ROW_HEIGHT;
         case RowType.EmptyResults:
           return EMPTY_RESULTS_ROW_HEIGHT;
@@ -633,6 +656,18 @@ export function ConversationList({
             </div>
           );
           key = 'empty-results';
+          break;
+        case RowType.AllInGoogleVoice:
+          key = `allin-gv:${row.thread.threadId}`;
+          result = <GoogleVoiceListRow thread={row.thread} />;
+          break;
+        case RowType.AllInFantasy:
+          key = 'allin-fantasy';
+          result = <FantasyListRow />;
+          break;
+        case RowType.AllInNewGoogleVoice:
+          key = 'allin-new-gv';
+          result = <NewGoogleVoiceRow />;
           break;
         default:
           throw missingCaseError(row);
