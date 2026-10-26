@@ -1,0 +1,57 @@
+# AllIn: builds the Windows installer on GitHub's machines and publishes it as a GitHub Release.
+#
+# Runs when package.json changes on the allin branch (e.g. after merging a new Signal version), or by hand from the
+# Actions tab. The installer is unsigned, so Windows SmartScreen warns on first run ("More info" > "Run anyway").
+# Self-updates are off (config/production.json): install new releases by hand.
+
+name: AllIn Windows release
+
+on:
+  push:
+    branches: [ allin ]
+    paths: [ package.json ]
+  workflow_dispatch:
+
+concurrency:
+  group: allin-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup environment
+        uses: ./.github/actions/setup
+        with:
+          cache-electron-builder: true
+
+      - name: Run generate
+        run: pnpm run generate
+
+      - name: Create preload cache
+        run: pnpm run build:preload-cache
+        env:
+          ARTIFACTS_DIR: artifacts/win
+
+      - name: Build the installer
+        run: pnpm run build:release --publish=never
+        env:
+          DISABLE_INSPECT_FUSE: on
+
+      - name: Publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          tag="v$version-allin.${{ github.run_number }}"
+          installer="$(ls release/*.exe | head -n 1)"
+          gh release create "$tag" "$installer" --target "$GITHUB_SHA" --title "AllIn Desktop $version (build ${{ github.run_number }})" \
+            --notes "Windows installer for AllIn Desktop, based on Signal Desktop $version. Unsigned: if SmartScreen warns, choose More info > Run anyway."

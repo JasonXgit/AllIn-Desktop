@@ -1,10 +1,10 @@
 {
   "$schema": "./package.schema.json",
   "private": true,
-  "name": "signal-desktop",
-  "productName": "Signal",
+  "name": "allin-desktop",
+  "productName": "AllIn",
   "description": "Private messaging from your desktop",
-  "desktopName": "signal.desktop",
+  "desktopName": "allin.desktop",
   "repository": "https://github.com/signalapp/Signal-Desktop.git",
   "version": "8.32.0",
   "license": "AGPL-3.0-only",
@@ -356,7 +356,7 @@
     }
   },
   "build": {
-    "appId": "org.whispersystems.signal-desktop",
+    "appId": "ky.jason.allin.desktop",
     "nativeRebuilder": "parallel",
     "mac": {
       "artifactName": "${name}-mac-${arch}-${version}.${ext}",
@@ -448,9 +448,6 @@
     },
     "win": {
       "signtoolOptions": {
-        "certificateSubjectName": "Signal Messenger, LLC",
-        "certificateSha1": "8D5E3CD800736C5E1FE459A1F5AA48287D4F6EC6",
-        "publisherName": "Signal Messenger, LLC",
         "sign": "scripts/sign-windows.mjs",
         "signingHashAlgorithms": [
           "sha256"
@@ -495,11 +492,11 @@
       }
     },
     "linux": {
-      "executableName": "signal-desktop",
+      "executableName": "allin-desktop",
       "category": "Network;InstantMessaging;Chat",
       "desktop": {
         "entry": {
-          "StartupWMClass": "signal"
+          "StartupWMClass": "allin"
         }
       },
       "artifactName": "${name}_${version}_${arch}.${ext}",
