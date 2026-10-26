@@ -6,6 +6,7 @@ import {
   signalbackups as Backups,
   signalservice as SignalService,
   migrations as Migrations,
+  allin_gv as AllInGoogleVoice,
 } from './compiled.std.js';
 
-export { Backups, SignalService, Signal, Migrations };
+export { Backups, SignalService, Signal, Migrations, AllInGoogleVoice };

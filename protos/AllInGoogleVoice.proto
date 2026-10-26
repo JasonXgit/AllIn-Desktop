@@ -1,0 +1,54 @@
+// AllIn: the parts of the Google Voice web protocol that AllIn Desktop reads. From mautrix-gvoice
+// (https://github.com/mautrix/gvoice), Copyright (C) 2024 Tulir Asokan, AGPL-3.0. Field names are reverse-engineered
+// and may change. Enums are read as plain numbers so new values from Google don't break decoding.
+
+package allin_gv;
+
+message RespListThreads {
+  repeated Thread threads         = 1;
+  optional string paginationToken = 2;
+}
+
+message RespGetThread {
+  optional Thread thread = 1;
+}
+
+message RespSendSMS {
+  optional string threadID     = 2;
+  optional string threadItemID = 3;
+  optional int64  timestampMS  = 4;
+}
+
+message Thread {
+  optional string  ID           = 1;
+  optional bool    read         = 2;
+  repeated Message messages     = 3;
+  repeated Contact contacts     = 5;
+  optional bool    isText       = 8;
+  repeated string  phoneNumbers = 9;
+}
+
+message Message {
+  // Type: 10 = SMS_IN, 11 = SMS_OUT (others are calls and voicemail).
+  optional string     ID        = 1;
+  optional int64      timestamp = 2;
+  optional Contact    contact   = 4;
+  optional int32      type      = 5;
+  optional string     text      = 10;
+  optional MMSMessage MMS       = 15;
+}
+
+message MMSMessage {
+  optional string     text        = 1;
+  repeated Attachment attachments = 3;
+}
+
+message Attachment {
+  optional string mimeType = 1;
+  optional string ID       = 2;
+}
+
+message Contact {
+  optional string name        = 1;
+  optional string phoneNumber = 2;
+}

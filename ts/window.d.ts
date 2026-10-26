@@ -27,6 +27,14 @@ import type { QueryStatsOptions } from './sql/main.main.ts';
 import type { SocketStatuses } from './textsecure/SocketManager.preload.ts';
 import type { SignalClipboardType } from './windows/clipboard.preload.ts';
 import type { PDFWindowPropsType } from './windows/pdf/types.std.ts';
+import type { AllInApi, AllInEvent } from './allin/types.std.ts';
+
+export type AllInBridgeType = {
+  api: AllInApi & {
+    gvSetNames(names: Record<string, string>): Promise<void>;
+  };
+  onEvent: (listener: (event: AllInEvent) => void) => () => void;
+};
 
 export type IPCType = {
   addSetupMenuItems: () => void;
@@ -189,6 +197,8 @@ declare global {
 
     // IPC
     IPC: IPCType;
+    // AllIn: Google Voice and Fantasy Football tabs (app/allin)
+    AllIn: AllInBridgeType;
 
     // State
     reduxActions: ReduxActions;

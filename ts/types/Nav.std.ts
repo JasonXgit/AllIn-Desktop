@@ -61,6 +61,9 @@ export enum NavTab {
   Chats = 'Chats',
   Calls = 'Calls',
   Stories = 'Stories',
+  // AllIn: extra tabs (ts/allin)
+  GoogleVoice = 'GoogleVoice',
+  Fantasy = 'Fantasy',
   Settings = 'Settings',
 }
 

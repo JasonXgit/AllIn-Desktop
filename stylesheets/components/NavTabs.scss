@@ -176,6 +176,15 @@ $NavTabs__ProfileAvatar__size: 28px;
   }
 }
 
+// AllIn: Google Voice and Fantasy Football tabs
+.NavTabs__ItemIcon--GoogleVoice {
+  @include NavTabs__Icon('../images/icons/v3/number/number-light.svg');
+}
+
+.NavTabs__ItemIcon--Fantasy {
+  @include NavTabs__Icon('../images/icons/v3/trending/trending.svg');
+}
+
 .NavTabs__ItemIconLabel {
   @include mixins.sr-only;
 }

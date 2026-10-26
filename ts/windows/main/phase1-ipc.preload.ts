@@ -6,7 +6,8 @@ import { ipcRenderer as ipc } from 'electron';
 import * as semver from 'semver';
 import lodash, { throttle } from 'lodash';
 
-import type { IPCType } from '../../window.d.ts';
+import type { AllInBridgeType, IPCType } from '../../window.d.ts';
+import type { AllInEvent } from '../../allin/types.std.ts';
 import { parseIntWithFallback } from '../../util/parseIntWithFallback.std.ts';
 import { getSignalConnections } from '../../util/getSignalConnections.preload.ts';
 import { ThemeType } from '../../types/Util.std.ts';
@@ -186,6 +187,22 @@ const IPC: IPCType = {
 };
 
 window.IPC = IPC;
+
+// AllIn: every AllInApi method is an `allin:<name>` ipcMain handler (app/allin/AllIn.main.ts).
+window.AllIn = {
+  api: new Proxy({} as AllInBridgeType['api'], {
+    get: (_target, name) =>
+      (...args: Array<unknown>) =>
+        ipc.invoke(`allin:${String(name)}`, ...args),
+  }),
+  onEvent: listener => {
+    const handler = (_event: unknown, event: AllInEvent) => listener(event);
+    ipc.on('allin:event', handler);
+    return () => {
+      ipc.removeListener('allin:event', handler);
+    };
+  },
+};
 
 window.isBeforeVersion = (toCheck, baseVersion) => {
   try {

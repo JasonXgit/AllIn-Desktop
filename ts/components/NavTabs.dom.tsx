@@ -12,6 +12,8 @@ import { Theme } from '../util/theme.std.ts';
 import type { UnreadStats } from '../util/countUnreadStats.std.ts';
 import { getUnreadCountForBadge } from '../util/countUnreadStats.std.ts';
 import type { UnreadCountBadgeType } from '../types/StorageKeys.std.ts';
+import { GoogleVoiceTab } from '../allin/GoogleVoiceTab.dom.tsx';
+import { FantasyTab } from '../allin/FantasyTab.dom.tsx';
 
 type NavTabsItemBadgesProps = Readonly<{
   i18n: LocalizerType;
@@ -291,6 +293,22 @@ export function NavTabs({
           )}
           <NavTabsItem
             i18n={i18n}
+            id={NavTab.GoogleVoice}
+            label="Google Voice"
+            iconClassName="NavTabs__ItemIcon--GoogleVoice"
+            navTabClassName="NavTabs__Item--GoogleVoice"
+            unreadCount={0}
+          />
+          <NavTabsItem
+            i18n={i18n}
+            id={NavTab.Fantasy}
+            label="Fantasy"
+            iconClassName="NavTabs__ItemIcon--Fantasy"
+            navTabClassName="NavTabs__Item--Fantasy"
+            unreadCount={0}
+          />
+          <NavTabsItem
+            i18n={i18n}
             id={NavTab.Settings}
             label={i18n('icu:NavTabs__ItemLabel--Settings')}
             iconClassName="NavTabs__ItemIcon--Settings"
@@ -308,6 +326,12 @@ export function NavTabs({
       </TabPanel>
       <TabPanel id={NavTab.Stories} className="NavTabs__TabPanel">
         {renderStoriesTab}
+      </TabPanel>
+      <TabPanel id={NavTab.GoogleVoice} className="NavTabs__TabPanel">
+        <GoogleVoiceTab />
+      </TabPanel>
+      <TabPanel id={NavTab.Fantasy} className="NavTabs__TabPanel">
+        <FantasyTab />
       </TabPanel>
       <TabPanel id={NavTab.Settings} className="NavTabs__TabPanel">
         {renderSettingsTab}

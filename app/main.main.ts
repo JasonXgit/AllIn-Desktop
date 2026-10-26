@@ -37,6 +37,7 @@ import type {
 import { z } from 'zod';
 
 import { packageJson } from '../ts/util/packageJson.main.ts';
+import { initAllIn } from './allin/AllIn.main.ts';
 import * as GlobalErrors from './global_errors.main.ts';
 import { setup as setupCrashReports } from './crashReports.main.ts';
 import { setup as setupSpellChecker } from './spell_check.main.ts';
@@ -2460,6 +2461,7 @@ app.on('ready', async () => {
 
   // Run window preloading in parallel with database initialization.
   await createWindow();
+  initAllIn({ getMainWindow, showWindow });
 
   const { error: sqlError } = await sqlInitPromise;
   if (sqlError) {
