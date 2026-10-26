@@ -40,6 +40,7 @@ import {
   myLeagues,
 } from './EspnApi.main.ts';
 import { sign, warmUp } from './WaaSigner.main.ts';
+import { startUpdater } from './Updater.main.ts';
 import { getSettings, updateSettings } from './settings.main.ts';
 import { clearSession, getCookie, signIn } from './WebSession.main.ts';
 
@@ -191,5 +192,6 @@ export function initAllIn({
   }
 
   void updateMonitor(monitorCallbacks);
+  startUpdater(getMainWindow);
   log.info('AllIn features ready');
 }

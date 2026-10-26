@@ -2,7 +2,7 @@
 #
 # Runs when package.json changes on the allin branch (e.g. after merging a new Signal version), or by hand from the
 # Actions tab. The installer is unsigned, so Windows SmartScreen warns on first run ("More info" > "Run anyway").
-# Self-updates are off (config/production.json): install new releases by hand.
+# Signal's updater is off (config/production.json); AllIn's own (app/allin/Updater.main.ts) installs new releases.
 
 name: AllIn Windows release
 
@@ -26,6 +26,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Stamp the build number
+        # app/allin/Updater.main.ts compares it with the newest release's v<version>-allin.<build> tag.
+        shell: bash
+        run: |
+          node -e "const fs=require('fs');const f='config/production.json';const c=JSON.parse(fs.readFileSync(f,'utf8'));c.allinBuild=${{ github.run_number }};fs.writeFileSync(f,JSON.stringify(c,null,2))"
 
       - name: Setup environment
         uses: ./.github/actions/setup

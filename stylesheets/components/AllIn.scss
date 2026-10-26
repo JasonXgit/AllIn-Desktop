@@ -638,3 +638,15 @@ $allin-green: #34a853;
     color: var(--axo-color-label-secondary);
   }
 }
+
+// The conversation pane's box has no height of its own; give AllIn panes the full height so they scroll inside it.
+.AllInPaneHost {
+  display: flex;
+  height: 100%;
+
+  > * {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+}

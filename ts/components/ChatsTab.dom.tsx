@@ -63,7 +63,7 @@ export function ChatsTab({
       <div className="Inbox__conversation-stack">
         <div id="toast" />
         {openPane && !selectedConversationId ? (
-          <div className="Inbox__conversation">
+          <div className="Inbox__conversation AllInPaneHost">
             <AllInPaneView pane={openPane} />
           </div>
         ) : selectedConversationId ? (
