@@ -10,24 +10,17 @@ import type { JSX } from 'react';
 import classNames from 'classnames';
 import type { GoogleVoiceMessage, GoogleVoiceThread } from './types.std.ts';
 import {
+  acknowledgeGoogleVoice,
   formatNumber,
   openAllInPane,
   refreshGoogleVoice,
+  retryGoogleVoice,
+  sendGoogleVoice,
   threadName,
   useAllInState,
 } from './store.dom.ts';
 
 const MAX_PHOTO_DIMENSION = 1600;
-
-type PendingMessage = {
-  localId: string;
-  text: string;
-  photoUrl: string | undefined;
-  jpeg: Uint8Array<ArrayBuffer> | undefined;
-  timestamp: number;
-  status: 'sending' | 'sent' | 'failed';
-  serverId: string | undefined;
-};
 
 type Photo = { jpeg: Uint8Array<ArrayBuffer>; url: string };
 
@@ -187,11 +180,11 @@ export function GoogleVoiceConversationPane({
 }: {
   threadId: string;
 }): JSX.Element {
-  const { gvThreads, gvNames } = useAllInState();
+  const { gvThreads, gvNames, gvOutbox } = useAllInState();
   const summary = gvThreads.find(t => t.threadId === threadId);
   const [thread, setThread] = useState<GoogleVoiceThread | undefined>();
   const [error, setError] = useState<string | undefined>();
-  const [pending, setPending] = useState<ReadonlyArray<PendingMessage>>([]);
+  const pending = gvOutbox.filter(item => item.threadId === threadId);
   const bottom = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -203,19 +196,13 @@ export function GoogleVoiceConversationPane({
       setThread(loaded);
       setError(undefined);
       // Once Google lists a message we sent, show Google's copy instead of ours.
-      setPending(list =>
-        list.filter(
-          p =>
-            !(
-              p.status === 'sent' &&
-              loaded.messages.some(
-                m =>
-                  m.id === p.serverId ||
-                  (m.outgoing &&
-                    m.text === p.text &&
-                    m.timestamp >= p.timestamp - 120_000)
-              )
-            )
+      acknowledgeGoogleVoice(threadId, p =>
+        loaded.messages.some(
+          m =>
+            m.id === p.serverId ||
+            (m.outgoing &&
+              m.text === p.text &&
+              m.timestamp >= p.timestamp - 120_000)
         )
       );
       if (!loaded.read) {
@@ -234,47 +221,12 @@ export function GoogleVoiceConversationPane({
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ block: 'end' });
-  }, [thread, pending]);
+  }, [thread, pending.length]);
 
   const recipients = thread?.phoneNumbers ?? summary?.phoneNumbers ?? [];
   const name = summary
     ? threadName(summary, gvNames)
     : recipients.map(n => gvNames[n] || formatNumber(n)).join(', ');
-
-  const send = async (message: PendingMessage) => {
-    try {
-      const result = await window.AllIn.api.gvSend(
-        threadId,
-        recipients,
-        message.text,
-        message.jpeg
-      );
-      setPending(list =>
-        list.map(p =>
-          p.localId === message.localId
-            ? { ...p, status: 'sent', serverId: result.messageId }
-            : p
-        )
-      );
-      await load();
-      void refreshGoogleVoice();
-    } catch {
-      setPending(list =>
-        list.map(p =>
-          p.localId === message.localId ? { ...p, status: 'failed' } : p
-        )
-      );
-    }
-  };
-
-  const retry = (message: PendingMessage) => {
-    setPending(list =>
-      list.map(p =>
-        p.localId === message.localId ? { ...p, status: 'sending' } : p
-      )
-    );
-    void send({ ...message, status: 'sending' });
-  };
 
   return (
     <div className="AllInConversation">
@@ -289,7 +241,11 @@ export function GoogleVoiceConversationPane({
           <div key={p.localId} className="AllInBubble AllInBubble--outgoing">
             <div
               className="AllInBubble__body"
-              onClick={p.status === 'failed' ? () => retry(p) : undefined}
+              onClick={
+                p.status === 'failed'
+                  ? () => retryGoogleVoice(p.localId)
+                  : undefined
+              }
               role={p.status === 'failed' ? 'button' : undefined}
             >
               {p.photoUrl && (
@@ -313,19 +269,9 @@ export function GoogleVoiceConversationPane({
       {thread && (
         <Composer
           onError={setError}
-          onSend={(text, photo) => {
-            const message: PendingMessage = {
-              localId: `local-${Date.now()}-${Math.random()}`,
-              text,
-              photoUrl: photo?.url,
-              jpeg: photo?.jpeg,
-              timestamp: Date.now(),
-              status: 'sending',
-              serverId: undefined,
-            };
-            setPending(list => [...list, message]);
-            void send(message);
-          }}
+          onSend={(text, photo) =>
+            sendGoogleVoice(threadId, recipients, text, photo)
+          }
         />
       )}
     </div>

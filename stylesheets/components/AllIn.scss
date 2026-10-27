@@ -478,16 +478,15 @@ $allin-green: #34a853;
   cursor: pointer;
 }
 
-// Rows AllIn adds to the chat list, sized like Signal's (76px) and marked with a green bar.
+// Rows AllIn adds to the chat list, sized like Signal's (76px).
 .AllInListRow {
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
   height: 100%;
-  padding: 0 12px 0 13px;
+  padding: 0 12px 0 16px;
   border: none;
-  border-inline-start: 3px solid $allin-green;
   border-radius: 0;
   background: none;
   color: var(--axo-color-label-primary);
@@ -501,10 +500,6 @@ $allin-green: #34a853;
 
 .AllInListRow--selected {
   background: var(--axo-color-fill-secondary);
-}
-
-.AllInListRow--fantasy {
-  border-inline-start-color: #1e88e5;
 }
 
 .AllInListRow__avatar {

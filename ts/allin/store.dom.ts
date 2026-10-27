@@ -18,6 +18,19 @@ export type AllInPane =
   | { kind: 'fantasy' }
   | { kind: 'settings' };
 
+/** A Google Voice text being sent (kept here, not in the pane, so it survives switching conversations). */
+export type OutboxItem = Readonly<{
+  localId: string;
+  threadId: string;
+  recipients: ReadonlyArray<string>;
+  text: string;
+  photoUrl: string | undefined;
+  jpeg: Uint8Array<ArrayBuffer> | undefined;
+  timestamp: number;
+  status: 'sending' | 'sent' | 'failed';
+  serverId: string | undefined;
+}>;
+
 export type AllInState = Readonly<{
   gvSignedIn: boolean;
   gvThreads: ReadonlyArray<GoogleVoiceThreadSummary>;
@@ -26,6 +39,7 @@ export type AllInState = Readonly<{
   fantasySignedIn: boolean;
   fantasyLeague: EspnLeague | undefined;
   openPane: AllInPane | undefined;
+  gvOutbox: ReadonlyArray<OutboxItem>;
 }>;
 
 const GV_REFRESH_MS = 15_000;
@@ -39,6 +53,7 @@ let state: AllInState = {
   fantasySignedIn: false,
   fantasyLeague: undefined,
   openPane: undefined,
+  gvOutbox: [],
 };
 const listeners = new Set<() => void>();
 let started = false;
@@ -156,6 +171,90 @@ export async function refreshFantasy(): Promise<void> {
     });
   } catch {
     // Keep showing the last score.
+  }
+}
+
+const SEND_ATTEMPTS = 3;
+const RETRY_DELAYS_MS = [5_000, 15_000];
+
+function updateOutboxItem(localId: string, changes: Partial<OutboxItem>): void {
+  setState({
+    gvOutbox: state.gvOutbox.map(item =>
+      item.localId === localId ? { ...item, ...changes } : item
+    ),
+  });
+}
+
+async function deliver(item: OutboxItem): Promise<void> {
+  for (let attempt = 1; attempt <= SEND_ATTEMPTS; attempt += 1) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await window.AllIn.api.gvSend(
+        item.threadId,
+        item.recipients,
+        item.text,
+        item.jpeg
+      );
+      updateOutboxItem(item.localId, {
+        status: 'sent',
+        serverId: result.messageId,
+      });
+      void refreshGoogleVoice();
+      return;
+    } catch {
+      if (attempt < SEND_ATTEMPTS) {
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise(resolve => {
+          setTimeout(resolve, RETRY_DELAYS_MS[attempt - 1]);
+        });
+      }
+    }
+  }
+  updateOutboxItem(item.localId, { status: 'failed' });
+}
+
+/** Sends a Google Voice text into [threadId]; it shows at once and retries by itself before showing "Not sent". */
+export function sendGoogleVoice(
+  threadId: string,
+  recipients: ReadonlyArray<string>,
+  text: string,
+  photo: { jpeg: Uint8Array<ArrayBuffer>; url: string } | undefined
+): void {
+  const item: OutboxItem = {
+    localId: `local-${Date.now()}-${Math.random()}`,
+    threadId,
+    recipients,
+    text,
+    photoUrl: photo?.url,
+    jpeg: photo?.jpeg,
+    timestamp: Date.now(),
+    status: 'sending',
+    serverId: undefined,
+  };
+  setState({ gvOutbox: [...state.gvOutbox, item] });
+  void deliver(item);
+}
+
+export function retryGoogleVoice(localId: string): void {
+  const item = state.gvOutbox.find(i => i.localId === localId);
+  if (!item || item.status !== 'failed') {
+    return;
+  }
+  updateOutboxItem(localId, { status: 'sending' });
+  void deliver(item);
+}
+
+/** Drops sent texts that Google now lists itself. */
+export function acknowledgeGoogleVoice(
+  threadId: string,
+  isOnServer: (item: OutboxItem) => boolean
+): void {
+  const kept = state.gvOutbox.filter(
+    item =>
+      !(item.threadId === threadId && item.status === 'sent' && isOnServer(item))
+  );
+  if (kept.length !== state.gvOutbox.length) {
+    setState({ gvOutbox: kept });
   }
 }
 
