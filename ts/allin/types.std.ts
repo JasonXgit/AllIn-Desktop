@@ -19,6 +19,9 @@ export type GoogleVoiceThreadSummary = Readonly<{
   dateMs: number;
   unread: boolean;
   lastMessageOutgoing: boolean;
+  /** AllIn: 'phone' for a phone text (SMS/MMS/RCS relayed from AllIn on the phone) rather than Google Voice. */
+  source?: 'phone';
+  rcs?: boolean;
 }>;
 
 export type GoogleVoiceMessage = Readonly<{

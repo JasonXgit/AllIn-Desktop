@@ -22,9 +22,9 @@ import {
 
 const MAX_PHOTO_DIMENSION = 1600;
 
-type Photo = { jpeg: Uint8Array<ArrayBuffer>; url: string };
+export type Photo = { jpeg: Uint8Array<ArrayBuffer>; url: string };
 
-function formatTime(timestamp: number): string {
+export function formatTime(timestamp: number): string {
   const date = new Date(timestamp);
   if (date.toDateString() === new Date().toDateString()) {
     return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -58,7 +58,7 @@ async function prepareJpeg(file: File): Promise<Uint8Array<ArrayBuffer>> {
 }
 
 /** "+15551234567" from what the user typed, or undefined if it isn't a phone number. */
-function toE164(input: string): string | undefined {
+export function toE164(input: string): string | undefined {
   const digits = input.replace(/[^\d+]/g, '');
   if (/^\+\d{8,15}$/.test(digits)) {
     return digits;
@@ -74,12 +74,14 @@ function toE164(input: string): string | undefined {
 }
 
 /** The box at the bottom: photo button, text field and send button. */
-function Composer({
+export function Composer({
   onSend,
   onError,
+  placeholder = 'Google Voice message',
 }: {
   onSend: (text: string, photo: Photo | undefined) => void;
   onError: (message: string) => void;
+  placeholder?: string;
 }): JSX.Element {
   const [draft, setDraft] = useState('');
   const [photo, setPhoto] = useState<Photo | undefined>();
@@ -141,7 +143,7 @@ function Composer({
         />
         <textarea
           className="AllInComposer__input"
-          placeholder="Google Voice message"
+          placeholder={placeholder}
           value={draft}
           rows={1}
           onChange={e => setDraft(e.target.value)}
@@ -164,7 +166,7 @@ function Composer({
   );
 }
 
-function PaneHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+export function PaneHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="AllInConversation__header">
       <div>{title}</div>

@@ -1267,6 +1267,7 @@ export class MessageSender {
       viewed: null,
       stickerPackOperation: null,
       content: null,
+      allinRelay: null,
       ...params,
       padding: this.getRandomPadding(),
     };

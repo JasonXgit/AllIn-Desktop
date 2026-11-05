@@ -38,18 +38,27 @@ export function GoogleVoiceListRow({
 }): JSX.Element {
   const { gvNames, openPane } = useAllInState();
   const name = threadName(thread, gvNames);
-  const selected =
-    openPane?.kind === 'googleVoice' && openPane.threadId === thread.threadId;
+  const isPhone = thread.source === 'phone';
+  const selected = isPhone
+    ? openPane?.kind === 'phoneText' &&
+      openPane.conversationId === thread.threadId
+    : openPane?.kind === 'googleVoice' && openPane.threadId === thread.threadId;
 
   return (
     <button
       type="button"
-      className={classNames('AllInListRow', 'AllInListRow--googleVoice', {
+      className={classNames('AllInListRow', {
+        'AllInListRow--googleVoice': !isPhone,
+        'AllInListRow--phone': isPhone,
         'AllInListRow--selected': selected,
         'AllInListRow--unread': thread.unread,
       })}
       onClick={() =>
-        openAllInPane({ kind: 'googleVoice', threadId: thread.threadId })
+        openAllInPane(
+          isPhone
+            ? { kind: 'phoneText', conversationId: thread.threadId }
+            : { kind: 'googleVoice', threadId: thread.threadId }
+        )
       }
     >
       <div className="AllInListRow__avatar">{initials(name)}</div>
@@ -65,7 +74,9 @@ export function GoogleVoiceListRow({
             {thread.lastMessageOutgoing ? 'You: ' : ''}
             {thread.snippet}
           </span>
-          <span className="AllInListRow__badge">Voice</span>
+          <span className="AllInListRow__badge">
+            {isPhone ? (thread.rcs ? 'RCS' : 'SMS') : 'Voice'}
+          </span>
           {thread.unread && <span className="AllInListRow__unread" />}
         </div>
       </div>
@@ -91,6 +102,32 @@ export function FantasyListRow(): JSX.Element {
         <div className="AllInListRow__bottom">
           <span className="AllInListRow__snippet">
             {fantasySummary(fantasyLeague)}
+          </span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+/** The "New text message" choice (sent through the phone) in Signal's new-message list. */
+export function NewPhoneTextRow(): JSX.Element {
+  return (
+    <button
+      type="button"
+      className="AllInListRow AllInListRow--phone"
+      onClick={() => {
+        window.reduxActions.conversations.showInbox();
+        openAllInPane({ kind: 'newPhoneText' });
+      }}
+    >
+      <div className="AllInListRow__avatar">#</div>
+      <div className="AllInListRow__content">
+        <div className="AllInListRow__top">
+          <span className="AllInListRow__name">New text message</span>
+        </div>
+        <div className="AllInListRow__bottom">
+          <span className="AllInListRow__snippet">
+            Send an SMS or RCS from your phone's number
           </span>
         </div>
       </div>

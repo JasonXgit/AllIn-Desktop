@@ -78,6 +78,7 @@ export const sendTypesEnum = z.enum([
   'callEventSync',
   'callLinkUpdateSync',
   'callLogEventSync',
+  'allinRelay', // AllIn: phone texts relayed between the user's own AllIn devices
   'deviceNameChangeSync',
   'attachmentBackfillRequestSync',
   'attachmentBackfillResponseSync',

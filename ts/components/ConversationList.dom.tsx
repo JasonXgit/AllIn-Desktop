@@ -43,6 +43,7 @@ import {
   FantasyListRow,
   GoogleVoiceListRow,
   NewGoogleVoiceRow,
+  NewPhoneTextRow,
 } from '../allin/ChatListRows.dom.tsx';
 import type { RenderConversationListItemContextMenuProps } from './conversationList/BaseConversationListItem.dom.tsx';
 
@@ -74,6 +75,7 @@ export enum RowType {
   AllInGoogleVoice = 'AllInGoogleVoice',
   AllInFantasy = 'AllInFantasy',
   AllInNewGoogleVoice = 'AllInNewGoogleVoice',
+  AllInNewPhoneText = 'AllInNewPhoneText',
 }
 
 type AllInGoogleVoiceRowType = {
@@ -82,6 +84,7 @@ type AllInGoogleVoiceRowType = {
 };
 type AllInFantasyRowType = { type: RowType.AllInFantasy };
 type AllInNewGoogleVoiceRowType = { type: RowType.AllInNewGoogleVoice };
+type AllInNewPhoneTextRowType = { type: RowType.AllInNewPhoneText };
 
 type ArchiveButtonRowType = {
   type: RowType.ArchiveButton;
@@ -224,7 +227,8 @@ export type Row =
   | EmptyResultsRowType
   | AllInGoogleVoiceRowType
   | AllInFantasyRowType
-  | AllInNewGoogleVoiceRowType;
+  | AllInNewGoogleVoiceRowType
+  | AllInNewPhoneTextRowType;
 
 export type PropsType = {
   dimensions?: {
@@ -326,6 +330,7 @@ export function ConversationList({
         case RowType.FindByUsername:
         case RowType.FindByPhoneNumber:
         case RowType.AllInNewGoogleVoice:
+        case RowType.AllInNewPhoneText:
           return SELECT_ROW_HEIGHT;
         case RowType.ArchiveButton:
         case RowType.Blank:
@@ -668,6 +673,10 @@ export function ConversationList({
         case RowType.AllInNewGoogleVoice:
           key = 'allin-new-gv';
           result = <NewGoogleVoiceRow />;
+          break;
+        case RowType.AllInNewPhoneText:
+          key = 'allin-new-phone';
+          result = <NewPhoneTextRow />;
           break;
         default:
           throw missingCaseError(row);

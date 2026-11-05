@@ -11,10 +11,16 @@ import type {
   GoogleVoiceThreadSummary,
 } from './types.std.ts';
 import { NavTab } from '../types/Nav.std.ts';
+import {
+  setPhoneTextsOpenHandler,
+  startPhoneTexts,
+} from './phoneTexts.dom.ts';
 
 export type AllInPane =
   | { kind: 'googleVoice'; threadId: string }
   | { kind: 'newGoogleVoice' }
+  | { kind: 'phoneText'; conversationId: string }
+  | { kind: 'newPhoneText' }
   | { kind: 'fantasy' }
   | { kind: 'settings' };
 
@@ -117,9 +123,14 @@ export function formatNumber(number: string): string {
 }
 
 export function threadName(
-  summary: Pick<GoogleVoiceThreadSummary, 'googleNames' | 'phoneNumbers'>,
+  summary: Pick<GoogleVoiceThreadSummary, 'googleNames' | 'phoneNumbers'> & {
+    source?: 'phone';
+  },
   names: Readonly<Record<string, string>> = state.gvNames
 ): string {
+  if (summary.source === 'phone') {
+    return summary.googleNames[0] || 'Text message';
+  }
   return (
     summary.phoneNumbers
       .map(
@@ -267,6 +278,14 @@ export function startAllIn(): void {
 
   void refreshGoogleVoice();
   void refreshFantasy();
+  startPhoneTexts();
+  setPhoneTextsOpenHandler(conversationId => {
+    window.reduxActions.nav.changeLocation({
+      tab: NavTab.Chats,
+      details: { conversationId: undefined },
+    });
+    openAllInPane({ kind: 'phoneText', conversationId });
+  });
   setInterval(() => void refreshGoogleVoice(), GV_REFRESH_MS);
   setInterval(() => void refreshFantasy(), FANTASY_REFRESH_MS);
 

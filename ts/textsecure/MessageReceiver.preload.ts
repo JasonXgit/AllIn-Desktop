@@ -1,6 +1,7 @@
 // Copyright 2020 Signal Messenger, LLC
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import { deliverAllInRelay } from '../allin/relay.std.ts';
 import lodash from 'lodash';
 import PQueue from 'p-queue';
 import { v7 as getGuid } from 'uuid';
@@ -3155,6 +3156,12 @@ export default class MessageReceiver
     }
     if (syncMessage.content?.usernameChange) {
       return this.#handleUsernameChangeSync(envelope);
+    }
+    if (syncMessage.allinRelay) {
+      // AllIn: phone texts from AllIn on the user's phone (see ts/allin/phoneTexts.dom.ts).
+      this.#removeFromCache(envelope);
+      deliverAllInRelay(syncMessage.allinRelay);
+      return;
     }
 
     this.#removeFromCache(envelope);

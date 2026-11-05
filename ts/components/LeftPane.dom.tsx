@@ -13,6 +13,7 @@ import {
 } from 'react';
 import classNames from 'classnames';
 import { startAllIn, useAllInState } from '../allin/store.dom.ts';
+import { usePhoneTexts } from '../allin/phoneTexts.dom.ts';
 
 import type { ToFindType } from './leftPane/LeftPaneHelper.dom.tsx';
 import { FindDirection } from './leftPane/LeftPaneHelper.dom.tsx';
@@ -339,12 +340,27 @@ export function LeftPane({
   // AllIn: Google Voice threads and the Fantasy Football row in the inbox.
   useEffect(() => startAllIn(), []);
   const allInState = useAllInState();
+  const phoneTexts = usePhoneTexts();
   const allInInbox = useMemo(
     () => ({
-      googleVoiceThreads: allInState.gvThreads,
+      // Phone texts (relayed from AllIn on the phone) are mixed in with the Google Voice threads by date.
+      googleVoiceThreads: [
+        ...allInState.gvThreads,
+        ...phoneTexts.threads.map(t => ({
+          threadId: t.id,
+          googleNames: [t.name],
+          phoneNumbers: [],
+          snippet: t.snippet,
+          dateMs: t.dateMs,
+          unread: t.unread,
+          lastMessageOutgoing: t.outgoing,
+          source: 'phone' as const,
+          rcs: t.rcs,
+        })),
+      ].sort((a, b) => b.dateMs - a.dateMs),
       showFantasy: allInState.fantasySignedIn,
     }),
-    [allInState.gvThreads, allInState.fantasySignedIn]
+    [allInState.gvThreads, allInState.fantasySignedIn, phoneTexts.threads]
   );
   const allInRowHeightKey = useRef('');
 

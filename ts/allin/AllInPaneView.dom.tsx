@@ -10,6 +10,10 @@ import {
   NewGoogleVoicePane,
 } from './GoogleVoicePane.dom.tsx';
 import { FantasyPane } from './FantasyPane.dom.tsx';
+import {
+  NewPhoneTextPane,
+  PhoneTextConversationPane,
+} from './PhoneTextsPane.dom.tsx';
 import { AllInSettingsTab } from './AllInSettingsTab.dom.tsx';
 
 export function AllInPaneView({ pane }: { pane: AllInPane }): JSX.Element {
@@ -23,6 +27,15 @@ export function AllInPaneView({ pane }: { pane: AllInPane }): JSX.Element {
       );
     case 'newGoogleVoice':
       return <NewGoogleVoicePane />;
+    case 'phoneText':
+      return (
+        <PhoneTextConversationPane
+          key={pane.conversationId}
+          conversationId={pane.conversationId}
+        />
+      );
+    case 'newPhoneText':
+      return <NewPhoneTextPane />;
     case 'fantasy':
       return <FantasyPane />;
     case 'settings':

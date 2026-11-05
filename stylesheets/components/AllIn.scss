@@ -585,6 +585,50 @@ $allin-green: #34a853;
   background: $allin-green;
 }
 
+// AllIn: phone texts (SMS/MMS/RCS relayed from the phone) are blue rather than Google Voice green.
+$allin-phone-blue: #1a73e8;
+
+.AllInListRow--phone {
+  .AllInListRow__avatar {
+    background: rgba($allin-phone-blue, 0.25);
+    color: $allin-phone-blue;
+  }
+
+  .AllInListRow__badge {
+    background: rgba($allin-phone-blue, 0.2);
+    color: $allin-phone-blue;
+  }
+
+  .AllInListRow__unread {
+    background: $allin-phone-blue;
+  }
+}
+
+.AllInNewText__input {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.AllInNewText__suggestion {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--axo-color-fill-secondary);
+  }
+}
+
 .AllInNewText__to {
   display: flex;
   flex-wrap: wrap;
